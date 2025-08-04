@@ -1,0 +1,15 @@
+venv/
+
+desktop.ini
+
+output/ghunter/*
+!output/ghunter/.gitkeep
+!output/ghunter/
+
+output/instaloader/*
+!output/instaloader/.gitkeep
+!output/instaloader/
+
+__pycache__/
+
+*.pkl
