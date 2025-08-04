@@ -13,3 +13,5 @@ output/instaloader/*
 __pycache__/
 
 *.pkl
+
+instagram-cookies.json

@@ -13,6 +13,7 @@ instaloader_preferences = {
         "--password": "",          # Plaintext password (not recommended)
         "--sessionfile": "",       # Path to session file
         "--load-cookies": "",      # Browser name or path
+        "--cookiefile": "",        # Path to cookie file
         "--no-cookies": False,
         "--login-captcha": False,
     },

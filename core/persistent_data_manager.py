@@ -41,4 +41,8 @@ def pdm_load_user_data_from_files(directory):
     return data
 
 def pdm_list_avalible_files():
-    return os.listdir("core\\user")
+    all = os.listdir("core\\user")
+    if ".gitkeep" in all:
+        all.remove(".gitkeep")
+
+    return all

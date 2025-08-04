@@ -41,55 +41,22 @@ def SH_parse_instaloader(data):
     command.extend(targets)
     return command
 
-
 def SH_execute_stream(command_list, output_frame=None, cwd=None):
     warning_keywords = [
-        "unable to fetch",
-        "skipping",
-        "retrying",
-        "deprecated",
-        "warning",
-        "slow down",
-        "rate limited",
-        "could not retrieve",
-        "not found",
-        "temporarily unavailable",
-        "connection reset",
-        "timed out",
-        "ssl certificate",
-        "incomplete",
-        "partial",
-        "using cached",
-        "falling back",
-        "ignored",
-        "redirected",
-        "unauthorized",
-        "notice",
-        "failed attempt",
-        "retry after",
+        "unable to fetch", "skipping", "retrying", "deprecated", "warning",
+        "slow down", "rate limited", "could not retrieve", "not found",
+        "temporarily unavailable", "connection reset", "timed out",
+        "ssl certificate", "incomplete", "partial", "using cached",
+        "falling back", "ignored", "redirected", "unauthorized", "notice",
+        "failed attempt", "retry after",
     ]
 
     error_keywords = [
-        "error",
-        "failed",
-        "exception",
-        "traceback",
-        "fatal",
-        "cannot",
-        "denied",
-        "unreachable",
-        "connection refused",
-        "invalid",
-        "corrupt",
-        "no such file",
-        "permission denied",
-        "segmentation fault",
-        "out of memory",
-        "crashed",
-        "not recognized",
-        "broken pipe",
-        "unhandled",
-        "panic",
+        "error", "failed", "exception", "traceback", "fatal",
+        "cannot", "denied", "unreachable", "connection refused",
+        "invalid", "corrupt", "no such file", "permission denied",
+        "segmentation fault", "out of memory", "crashed",
+        "not recognized", "broken pipe", "unhandled", "panic",
         "assertion failed",
     ]
 
@@ -99,7 +66,7 @@ def SH_execute_stream(command_list, output_frame=None, cwd=None):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            bufsize=1, 
+            bufsize=1,
             cwd=cwd
         )
 
@@ -112,12 +79,11 @@ def SH_execute_stream(command_list, output_frame=None, cwd=None):
                     anchor="w",
                     justify="left",
                     font=("Consolas", 12),
-                    wraplength=600
+                    wraplength=500
                 )
                 label.pack(fill="x", padx=5, pady=1, anchor="w")
                 output_frame.update_idletasks()
-                # Scroll to bottom
-                output_frame._canvas.yview_moveto(1)
+                output_frame.yview_moveto(1)
             else:
                 print(text)
 
@@ -139,16 +105,16 @@ def SH_execute_stream(command_list, output_frame=None, cwd=None):
                     append_label(clean_line, color)
             pipe.close()
 
-        # Run stdout and stderr in separate threads
+        # Run output threads
         stdout_thread = threading.Thread(target=stream, args=(process.stdout,))
         stderr_thread = threading.Thread(target=stream, args=(process.stderr,))
-
         stdout_thread.start()
         stderr_thread.start()
         stdout_thread.join()
         stderr_thread.join()
         process.wait()
 
+        # Show completion or raise on error
         if process.returncode != 0:
             raise CommandOutput(
                 output=" ".join(command_list),
@@ -156,6 +122,8 @@ def SH_execute_stream(command_list, output_frame=None, cwd=None):
                 stderr="See GUI output",
                 returncode=process.returncode
             )
+        else:
+            append_label("✓ Task completed successfully", "green")
 
     thread = threading.Thread(target=run_and_stream)
     thread.start()
