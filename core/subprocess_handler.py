@@ -1,7 +1,7 @@
 import subprocess
 import threading
 import customtkinter as ctk
-
+from datetime import datetime
 class CommandOutput(Exception):
     def __init__(self, output, stderr, stdout, returncode):
         super().__init__("Command output data")
@@ -39,6 +39,18 @@ def SH_parse_instaloader(data):
             targets.extend([t.strip() for t in options if isinstance(t, str) and t.strip()])
 
     command.extend(targets)
+    return command
+
+def SH_parse_ghunt(data):
+    command = []
+    command.append("ghunt")
+    command.append(data["mode"])
+    command.append(data["target"])
+    command.append("-o")
+    if data["output_file"] == "": 
+        command.append(datetime.now().strftime("%Y-%m-%d_%H-%M-%S")+".json")
+    else:
+        command.append(data["output_file"].strip()+".json")
     return command
 
 def SH_execute_stream(command_list, output_frame=None, cwd=None):
@@ -83,7 +95,7 @@ def SH_execute_stream(command_list, output_frame=None, cwd=None):
                 )
                 label.pack(fill="x", padx=5, pady=1, anchor="w")
                 output_frame.update_idletasks()
-                output_frame.yview_moveto(1)
+                output_frame._parent_canvas.yview_moveto(1.0)
             else:
                 print(text)
 
@@ -127,3 +139,5 @@ def SH_execute_stream(command_list, output_frame=None, cwd=None):
 
     thread = threading.Thread(target=run_and_stream)
     thread.start()
+
+

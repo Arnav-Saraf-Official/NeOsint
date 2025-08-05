@@ -79,8 +79,8 @@ instaloader_preferences = {
 
 Ghunt_preferences = {
     "target":"",
-    "mode":"",
-    "cookies":""
+    "mode":"", 
+    "output_file":""
 }
 
 dorking_preferences = {}
@@ -126,12 +126,15 @@ def start_gui():
         if selected_tab == "Instaloader":
             clear_gui(tabview.tab("Instaloader")) 
             Instaloader(tabview.tab("Instaloader"), instaloader_preferences)
+        if selected_tab == "Ghunt":
+            clear_gui(tabview.tab("Ghunt"))
+            Ghunt(tabview.tab("Ghunt"))
 
     tabview.configure(command=tab_change)
 
     Home(tabview.tab("Home"))
     Instaloader(tabview.tab("Instaloader"), instaloader_preferences)
-
+    Ghunt(tabview.tab("Ghunt"))
 def Home(master):
     ctk.CTkLabel(master, text="Home", font=("Calibri", 50)).pack(pady=10)
 
@@ -347,13 +350,78 @@ def pref_load(load_from, btn):
 
 #endregion
 
+#region Session Management
 def set_session(current_session_indicator, session_btn, session_name_entry):
     global session_id
     session_id = SM_create_session(current_session_indicator, session_btn, app, session_name_entry)
 def load_set_session(session_name, choose_btn, session_dropdown):
     global session_id
     session_id = SM_load_session(session_name, choose_btn, app, session_dropdown.get())
-                    
+
+#endregion
+
+
+def Ghunt(master):
+    ctk.CTkLabel(master, text="Ghunt", font=("Calibri", 50)).pack(pady=10)
+
+    mode_frame = ctk.CTkFrame(master, width=880, height=580, corner_radius=10, fg_color="#282929")
+    mode_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+    ctk.CTkLabel(mode_frame, text="Select Operation Mode", font=("Calibri", 24, "bold")).pack(side="left", pady=5, padx = 10)
+
+    mode_selector = ctk.CTkOptionMenu(mode_frame, values=["email", "gaia", "drive", "geolocate", "spiderdal"], width=380, height=30, corner_radius=10)
+    mode_selector.pack(side = "right", pady=5, padx = 10)
+
+    target_frame = ctk.CTkFrame(master=master, width=880, height=580, corner_radius=10, fg_color="#282929")
+    target_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+    ctk.CTkLabel(target_frame, text="Enter Target", font=("Calibri", 24, "bold")).pack(side = "left", pady=5, padx=10)
+
+    target_entry = ctk.CTkEntry(target_frame, placeholder_text="Gmail/GAIA ID/BSSID/Digital Asset Link", width=380, height=30, corner_radius=10)
+    target_entry.pack(side="right", pady=5, padx = 10)
+
+    output_file_frame = ctk.CTkFrame(master=master, width=880, height=580, corner_radius=10, fg_color="#282929")
+    output_file_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+    ctk.CTkLabel(output_file_frame, text="Save Output To", font=("Calibri", 24, "bold")).pack(side = "left", pady=5, padx=10)
+
+    output_file_entry = ctk.CTkEntry(output_file_frame, placeholder_text="Output File Name (No File Extension)", width=380, height=30, corner_radius=10)
+    output_file_entry.pack(side="right", pady=5, padx = 10)
+
+    if Ghunt_preferences["mode"] != "":
+        mode_selector.set(Ghunt_preferences["mode"])
+    if Ghunt_preferences["target"] != "":
+        target_entry.insert(0, Ghunt_preferences["target"])
+    if Ghunt_preferences["output_file"] != "":
+        output_file_entry.insert(0, Ghunt_preferences["output_file"])
+
+    ctk.CTkButton(master=master, text="Save Options", width=380, height=30, corner_radius=10, command=lambda: save_ghunt_preferences(mode_selector, target_entry, output_file_entry)).pack(pady=5)
+
+    ctk.CTkButton(master, text="Authenticate Ghunt With Your Gmail", width=380, height = 30, corner_radius=10, command = lambda: auth_ghunt(master)).pack(pady=5)
+
+    
+def save_ghunt_preferences(mode_selector, target_entry, output_file_entry):
+    Ghunt_preferences["mode"] = mode_selector.get()
+    Ghunt_preferences["target"] = target_entry.get()
+    Ghunt_preferences["output_file"] = output_file_entry.get()
+def auth_ghunt(master):
+    global session_id
+    if session_id == None:
+        dialog, session_path = SM_create_temp_session()
+        if dialog:       
+            session_id = session_path
+
+            output_frame = ctk.CTkScrollableFrame(master=master, width=880, height=580, corner_radius=10, fg_color="#282929")
+            output_frame.pack(padx=10, pady=10, fill="both")
+
+            import modules.ghunt as ghunt
+            ghunt.ghunt_login("output/"+session_id+"/Ghunt")
+        else:
+            pass
+    else:
+        import modules.ghunt as ghunt
+        ghunt.ghunt_login("output/"+session_id+"/Ghunt")
+
 def execute(inst, output_frame=None):
     if inst:
         try:
