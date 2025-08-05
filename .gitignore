@@ -2,13 +2,9 @@ venv/
 
 desktop.ini
 
-output/ghunter/*
-!output/ghunter/.gitkeep
-!output/ghunter/
-
-output/instaloader/*
+output/*
 !output/instaloader/.gitkeep
-!output/instaloader/
+!output/
 
 __pycache__/
 
