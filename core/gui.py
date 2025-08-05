@@ -1,8 +1,11 @@
 import customtkinter as ctk
 import tkinter as tk
-from persistent_data_manager import *
 import PIL.Image, PIL.ImageTk
+
+# Custom Modules
+from persistent_data_manager import *
 from subprocess_handler import *
+from session_manager import *
 # Global Variable Declarations
 
 instaloader_preferences = {
@@ -74,11 +77,17 @@ instaloader_preferences = {
     }
 }
 
-ghunter_preferences = {}
+Ghunt_preferences = {
+    "target":"",
+    "mode":"",
+    "cookies":""
+}
+
 dorking_preferences = {}
+
 sherlock_preferences = {}
 
-
+session_id = None
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -106,7 +115,7 @@ def start_gui():
 
     tabview.add("Home")
     tabview.add("Dorking")
-    tabview.add("Ghunter")
+    tabview.add("Ghunt")
     tabview.add("Instaloader") 
     tabview.add("Sherlock")
 
@@ -137,11 +146,36 @@ def Home(master):
     frameL = ctk.CTkScrollableFrame(container, width=400, height=500, label_text="Inputs")
     frameL.pack(side="left", padx=10, pady=5)
 
-    frameR = ctk.CTkScrollableFrame(container, width=400, height=500, label_text="Results")
-    frameR.pack(side="right", padx=10, pady=5)
-    
+    ctk.CTkLabel(frameL, text="Session Details", font=("Calibri", 24, "bold")).pack(pady=5)
+
+    session_name = ctk.CTkLabel(frameL, text="No Current Session", font=("Calibri", 12))
+    session_name.pack(pady=5)
+
+    ctk.CTkLabel(frameL, text="Select A Session", font=("Calibri", 17)).pack(pady=5)
+
+    session_dropdown = ctk.CTkOptionMenu(frameL, values=SM_get_available_sessions(), width=380, height=30, corner_radius=10)
+    session_dropdown.pack(pady=5)
+    choose_btn = ctk.CTkButton(frameL, text="Choose", width=380, height=30, corner_radius=10, command=lambda: 
+        load_set_session(session_name, choose_btn, session_dropdown)
+    )
+    choose_btn.pack(pady=5)
+
+    ctk.CTkLabel(frameL, text="Create A Session", font=("Calibri", 17)).pack(pady=5)
+
+    session_name_entry = ctk.CTkEntry(frameL, width=380, height=30, corner_radius=10, placeholder_text="Session Name (Optional)")
+    session_name_entry.pack(pady=5)
+    create_btn = ctk.CTkButton(frameL, text="Create", width=380, height=30, corner_radius=10, command=lambda:(
+        set_session(session_name, create_btn, session_name_entry)
+    ))
+    create_btn.pack(pady=5)
+
+    ctk.CTkLabel(frameL, text="Enabled Modules", font=("Calibri", 24, "bold")).pack(pady=5)
+
     inst_enable = ctk.CTkSwitch(frameL, text="Enable Instaloader", width=380, height=30, corner_radius=10)
     inst_enable.pack(pady=5)
+
+    frameR = ctk.CTkScrollableFrame(container, width=400, height=500, label_text="Results")
+    frameR.pack(side="right", padx=10, pady=5)
 
     ctk.CTkButton(frameL, text="Execute Enabled Programs", width=380, height=30, corner_radius=10, command=lambda: (execute(inst_enable, frameR))).pack(pady=5)
 
@@ -186,9 +220,7 @@ def Home(master):
     btn3.pack(side="right", padx=5)
     load.pack(side="right", padx=5)
 
-
-
-    
+# region Instaloader
 
 def Instaloader(parent, preferences):
     # Clear existing widgets (optional)
@@ -251,7 +283,6 @@ def Instaloader(parent, preferences):
     )
     save_button.pack(pady=10)
 
-
 def get_instaloader_preferences(parent, preferences):
     current_section = None
 
@@ -282,17 +313,16 @@ def get_instaloader_preferences(parent, preferences):
 
     print(preferences)
 
-
 def pref_save_as(save_as, btn):
     btn.configure(state="disabled")
-    while not pdm_save_user_data_to_file(save_as.get(), instaloader_preferences, ghunter_preferences, sherlock_preferences, dorking_preferences):
+    while not pdm_save_user_data_to_file(save_as.get(), instaloader_preferences, Ghunt_preferences, sherlock_preferences, dorking_preferences):
         pass
     btn.configure(text="Saved!", fg_color="green")
     save_as.delete(0, tk.END)
     app.after(2000, lambda: (btn.configure(state="normal"), btn.configure(text="Save", fg_color=ctk.ThemeManager.theme["CTkButton"]["fg_color"])))
 
 def pref_save_to(save_to, btn):
-    while not pdm_save_user_data_to_file(save_to.get(), instaloader_preferences, ghunter_preferences, sherlock_preferences, dorking_preferences):
+    while not pdm_save_user_data_to_file(save_to.get(), instaloader_preferences, Ghunt_preferences, sherlock_preferences, dorking_preferences):
         pass
     btn.configure(text="Saved!", fg_color="green", hover_color="green")
     app.after(2000, lambda: (btn.configure(state="normal"), btn.configure(text="Save", fg_color=ctk.ThemeManager.theme["CTkButton"]["fg_color"], hover_color=ctk.ThemeManager.theme["CTkButton"]["hover_color"])))
@@ -303,24 +333,33 @@ def pref_load(load_from, btn):
         pass
     
     global instaloader_preferences
-    instaloader_preferences = data["instaloader"]
-    global ghunter_preferences
-    ghunter_preferences = data["ghunter"]
+    instaloader_preferences = data["Instaloader"]
+    global Ghunt_preferences
+    Ghunt_preferences = data["Ghunt"]
     global sherlock_preferences
-    sherlock_preferences = data["sherlock"]
+    sherlock_preferences = data["Sherlock"]
     global dorking_preferences
-    dorking_preferences = data["dorking"]
+    dorking_preferences = data["Dorking"]
 
 
     btn.configure(text="Loaded!", fg_color="green")
     app.after(2000, lambda: (btn.configure(state="normal"), btn.configure(text="Load", fg_color=ctk.ThemeManager.theme["CTkButton"]["fg_color"])))
 
+#endregion
+
+def set_session(current_session_indicator, session_btn, session_name_entry):
+    global session_id
+    session_id = SM_create_session(current_session_indicator, session_btn, app, session_name_entry)
+def load_set_session(session_name, choose_btn, session_dropdown):
+    global session_id
+    session_id = SM_load_session(session_name, choose_btn, app, session_dropdown.get())
+                    
 def execute(inst, output_frame=None):
     if inst:
         try:
             cmd_list = SH_parse_instaloader(instaloader_preferences)
             print("Command:", cmd_list)
-            SH_execute_stream(cmd_list, output_frame=output_frame, cwd="output/instaloader")
+            SH_execute_stream(cmd_list, output_frame=output_frame, cwd="output/"+session_id+"/Instaloader")
         except CommandOutput as e:
             print(f"[!] Failed (code {e.returncode}):")
             print(f"STDERR:\n{e.stderr}")

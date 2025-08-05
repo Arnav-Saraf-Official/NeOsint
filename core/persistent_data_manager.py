@@ -1,21 +1,21 @@
 import pickle
 import os
-def pdm_save_user_data_to_file(filename, instaloader, ghunter, sherlock, dorking):
+def pdm_save_user_data_to_file(filename, instaloader, Ghunt, sherlock, dorking):
     os.makedirs(os.path.join("core", "user", filename), exist_ok=True)
     
-    filepath = os.path.join("core", "user", filename, "instaloader.pkl")
+    filepath = os.path.join("core", "user", filename, "Instaloader.pkl")
     with open(filepath, "wb") as file:
         pickle.dump(instaloader, file)
 
-    filepath = os.path.join("core", "user", filename, "ghunter.pkl")
+    filepath = os.path.join("core", "user", filename, "Ghunt.pkl")
     with open(filepath, "wb") as file:
-        pickle.dump(ghunter, file)
+        pickle.dump(Ghunt, file)
     
-    filepath = os.path.join("core", "user", filename, "sherlock.pkl")
+    filepath = os.path.join("core", "user", filename, "Sherlock.pkl")
     with open(filepath, "wb") as file:
         pickle.dump(sherlock, file)
 
-    filepath = os.path.join("core", "user", filename, "dorking.pkl")
+    filepath = os.path.join("core", "user", filename, "Dorking.pkl")
     with open(filepath, "wb") as file:
         pickle.dump(dorking, file)
 
@@ -24,10 +24,10 @@ def pdm_load_user_data_from_files(directory):
     data = {}
 
     file_names = {
-        "instaloader": "instaloader.pkl",
-        "ghunter": "ghunter.pkl",
-        "sherlock": "sherlock.pkl",
-        "dorking": "dorking.pkl",
+        "Instaloader": "Instaloader.pkl",
+        "Ghunt": "Ghunt.pkl",
+        "Sherlock": "Sherlock.pkl",
+        "Dorking": "Dorking.pkl",
     }
 
     for key, filename in file_names.items():
@@ -37,7 +37,7 @@ def pdm_load_user_data_from_files(directory):
                 data[key] = pickle.load(file)
         except FileNotFoundError:
             return "FILE_NOT_FOUND"
-
+    print(data)
     return data
 
 def pdm_list_avalible_files():
